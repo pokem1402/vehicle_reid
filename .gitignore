@@ -1,6 +1,10 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,opencv,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,opencv,jupyternotebooks
 
+#Dataset
+dataset/car_appearance
+dataset/car_appearance_origin
+
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
