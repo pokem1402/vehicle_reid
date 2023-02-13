@@ -124,7 +124,7 @@ class Evaluation:
         
         queries = self.df[side].groupby("classId").first()
 
-        gallaries = self.df[side].groupby('classId').apply(
+        galleries = self.df[side].groupby('classId').apply(
             lambda group:group.iloc[1:]
         ).reset_index(drop=True)
         
@@ -135,28 +135,28 @@ class Evaluation:
             #query image
             query_img = self.get_images_and_preprocess(self.dataset_path+query['file_name'])
             query_img_feat = self.infer(query_img)
-            #gallary image
-            gallary_similarity = []
-            for _, gallary in gallaries.groupby("classId").sample(1).iterrows():
+            #gallery image
+            gallery_similarity = []
+            for _, gallery in galleries.groupby("classId").sample(1).iterrows():
 
-            # for _cid, gallary in gallaries.groupby("classId").agg(pd.DataFrame.sample).iterrows():
+            # for _cid, gallery in galleries.groupby("classId").agg(pd.DataFrame.sample).iterrows():
 
-                gallary_img = self.get_images_and_preprocess(self.dataset_path+gallary['file_name'])
-                gallary_img_feat = self.infer(gallary_img)
+                gallery_img = self.get_images_and_preprocess(self.dataset_path+gallery['file_name'])
+                gallery_img_feat = self.infer(gallery_img)
 
-                similarity = calc_cosign_similarity(query_img_feat, gallary_img_feat)
+                similarity = calc_cosign_similarity(query_img_feat, gallery_img_feat)
 
-                gallary_similarity.append(
-                    tuple([similarity, gallary['classId']]))
+                gallery_similarity.append(
+                    tuple([similarity, gallery['classId']]))
 
-            gallary_similarity.sort(reverse=True)
+            gallery_similarity.sort(reverse=True)
 
             rank1 += 1 if list(filter(lambda x: x[1]
-                            == cid, gallary_similarity[:1])) else 0
+                            == cid, gallery_similarity[:1])) else 0
             rank5 += 1 if list(filter(lambda x: x[1]
-                            == cid, gallary_similarity[:5])) else 0
+                            == cid, gallery_similarity[:5])) else 0
             rank10 += 1 if list(filter(lambda x: x[1]
-                                == cid, gallary_similarity[:10])) else 0
+                                == cid, gallery_similarity[:10])) else 0
             i += 1
             
             pbar.set_postfix(
@@ -172,7 +172,7 @@ class Evaluation:
         
         queries = self.df[side].groupby("classId").first()
 
-        gallaries = self.df[side].groupby('classId').apply(
+        galleries = self.df[side].groupby('classId').apply(
             lambda group:group.iloc[1:]
         ).reset_index(drop=True)
         
@@ -186,37 +186,37 @@ class Evaluation:
             query_img = self.preprocessing(query_img)
             query_img_feat = self.infer(query_img)
             
-            #gallary image
-            gallary_images = []
-            gallary_img_feats = []
+            #gallery image
+            gallery_images = []
+            gallery_img_feats = []
             
             batch_i = 0
             clslist = []
-            for _, gallary in gallaries.groupby("classId").sample(1).iterrows():
+            for _, gallery in galleries.groupby("classId").sample(1).iterrows():
 
-            # for _cid, gallary in gallaries.groupby("classId").agg(pd.DataFrame.sample).iterrows():
-                gallary_img = self.get_image(self.dataset_path+gallary['file_name'])
-                gallary_img = self.preprocessing(gallary_img, for_batch=True)
-                gallary_images.append(gallary_img)
+            # for _cid, gallery in galleries.groupby("classId").agg(pd.DataFrame.sample).iterrows():
+                gallery_img = self.get_image(self.dataset_path+gallery['file_name'])
+                gallery_img = self.preprocessing(gallery_img, for_batch=True)
+                gallery_images.append(gallery_img)
             
-                clslist.append(gallary["classId"])
+                clslist.append(gallery["classId"])
 
                 if (batch_i + 1) % self.BATCH_SIZE == 0: 
-                    gal_images_batch = np.stack(gallary_images)
+                    gal_images_batch = np.stack(gallery_images)
                     gal_img_feat_part = self.infer(gal_images_batch)
-                    gallary_img_feats.append(gal_img_feat_part)
-                    gallary_images = []
+                    gallery_img_feats.append(gal_img_feat_part)
+                    gallery_images = []
                 batch_i+= 1
             else:
-                if gallary_images:
-                    gal_images_batch = np.stack(gallary_images)
+                if gallery_images:
+                    gal_images_batch = np.stack(gallery_images)
                     gal_img_feat_part = self.infer(gal_images_batch)
-                    gallary_img_feats.append(gal_img_feat_part)
+                    gallery_img_feats.append(gal_img_feat_part)
             
-            gallary_feat = np.concatenate(gallary_img_feats)
-            assert gallary_feat.shape == (queries.shape[0], 2048)
+            gallery_feat = np.concatenate(gallery_img_feats)
+            assert gallery_feat.shape == (queries.shape[0], 2048)
             
-            similarity = calc_cosign_similarity(query_img_feat, gallary_feat)
+            similarity = calc_cosign_similarity(query_img_feat, gallery_feat)
             
             sim_order_cid = np.argsort(similarity)[::-1]
             
